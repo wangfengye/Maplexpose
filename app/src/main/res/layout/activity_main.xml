@@ -24,6 +24,12 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:text="清空" />
+    <Button
+        android:layout_margin="32dp"
+        android:id="@+id/btn_loc"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="请求定位" />
 
    <android.support.v7.widget.AppCompatEditText
        android:id="@+id/et_bssid"
