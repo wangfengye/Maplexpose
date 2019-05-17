@@ -1,5 +1,7 @@
 package com.maple.maplexpose;
 
+import com.amap.location.demo.rpc.Ap;
+
 import java.util.ArrayList;
 import java.util.List;
 
@@ -9,31 +11,41 @@ import java.util.List;
  * @see 1040441325@qq.com
  */
 public class APList {
-    private List<Ap> mAps;
+    private int code;
+    private List<Ap> data;
 
-    public List<Ap> getmAps() {
-        return mAps == null ? new ArrayList<Ap>() : mAps;
+    public int getCode() {
+        return code;
     }
 
-    public void setmAps(List<Ap> mAps) {
-        this.mAps = mAps;
+    public void setCode(int code) {
+        this.code = code;
+    }
+
+    public List<Ap> getData() {
+        return data == null ? new ArrayList<Ap>() : data;
+    }
+
+    public void setData(List<Ap> data) {
+        this.data = data;
     }
 
     public void add(Ap ap) {
-        if (mAps == null) mAps = new ArrayList<>();
-        mAps.add(ap);
+        if (data == null) data = new ArrayList<>();
+        data.add(ap);
     }
 
     public void clear() {
-        if (mAps != null) mAps.clear();
+        if (data != null) data.clear();
     }
 
     @Override
     public String toString() {
         StringBuilder builder = new StringBuilder();
         builder.append("APList\n");
-        for (int i = 0; i < mAps.size(); i++) {
-            builder.append(mAps.get(i).toString()).append("\n");
+        if (data==null)return builder.toString();
+        for (int i = 0; i < data.size(); i++) {
+            builder.append(data.get(i).toString()).append("\n");
         }
         return builder.toString();
     }

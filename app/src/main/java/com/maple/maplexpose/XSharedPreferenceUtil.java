@@ -1,7 +1,12 @@
 package com.maple.maplexpose;
 
+import android.content.ContentResolver;
+import android.content.ContentValues;
 import android.content.Context;
 import android.content.SharedPreferences;
+import android.database.Cursor;
+import android.database.MatrixCursor;
+import android.net.Uri;
 import android.preference.PreferenceManager;
 
 import com.alibaba.fastjson.JSON;
@@ -40,5 +45,29 @@ public class XSharedPreferenceUtil {
         String json = getAppPreference(context).getString(key,"");
         return JSON.parseObject(json,type);
     }
+    public static String getString(Context context,String key){
+        return getAppPreference(context).getString(key,"");
+    }
+    public static boolean setString(Context context,String key,String data){
+        return getAppPreference(context).edit()
+                .putString(key,data)
+                .commit();
+    }
+    /******** ContentProvider 共享数据**********/
+    private static final Uri uri_aps = Uri.parse("content://com.maple.maplexpose");
+    public static APList getAps(Context context) {
+        ContentResolver resolver = context.getContentResolver();
+        Cursor data =  resolver.query(uri_aps, null, null, null, null);
+        String json = data.getColumnName(0);
+        APList aps = JSON.parseObject(json, APList.class);
+        return aps;
+    }
 
+    public static boolean setAps(APList aps, Context context) {
+        String json = JSON.toJSONString(aps);
+        ContentResolver resolver = context.getContentResolver();
+        ContentValues cv = new ContentValues();
+        cv.put("APS", json);
+        return resolver.update(uri_aps, cv, null, null) == 1;
+    }
 }

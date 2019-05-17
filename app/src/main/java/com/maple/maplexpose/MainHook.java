@@ -6,26 +6,22 @@ import android.content.DialogInterface;
 import android.location.Location;
 import android.location.LocationManager;
 import android.net.wifi.ScanResult;
-import android.os.Bundle;
-import android.telephony.CellInfo;
 import android.telephony.CellLocation;
+import android.test.mock.MockContentResolver;
 import android.widget.EditText;
-import android.widget.LinearLayout;
+
+import com.amap.location.demo.rpc.Ap;
 
 import java.lang.reflect.Array;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
-import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Date;
 import java.util.List;
-import java.util.Timer;
 
 import de.robv.android.xposed.IXposedHookLoadPackage;
 import de.robv.android.xposed.XC_MethodHook;
-import de.robv.android.xposed.XSharedPreferences;
 import de.robv.android.xposed.XposedBridge;
 import de.robv.android.xposed.XposedHelpers;
 import de.robv.android.xposed.callbacks.XC_LoadPackage;
@@ -35,30 +31,39 @@ import de.robv.android.xposed.callbacks.XC_LoadPackage;
  * @version v1.0
  * @see 1040441325@qq.com
  * hook入口类
- * todo 监听location改变回调无法hook,导致仍能获取gps数据,开机低功耗模式,不使用gps定位
  */
 public class MainHook implements IXposedHookLoadPackage {
     private static final String PACKAGE_NAME = "com.tencent.mm";
+    private static final String PACKAGE_NAME_LOC = "com.amap.location.demo";
     private static String mStr = "伟大航路";
     private static String mtmp = "started";
 
     //public static String[] macs = new String[]{"d8:2d:9b:03:1c:0a", "d4:ee:07:05:d2:e6", "00:0f:e2:00:00:51"};
     // wifi列表>3 才使用wifi定位,真实wifi>1即可进行定位,但真实wifi越少,定位失败率越高
     // wifi 定位 饿了么,钉钉,高德sdk 基本一致, sdk提供的地址详情有区别
-    public static String[] macs = new String[]{"00:07:bf:a0:3d:32 ", "00:23:cd:5f:92:2e", "06:95:73:30:6a:1e"};
+    public static String[] macs = new String[]{"00:07:bf:a0:3d:32", "00:23:cd:5f:92:2e", "06:95:73:30:6a:1e"};
     //public static String[] sdids = new String[]{"ASCEND10_5G", "ASCEND9", "HHHHHH"};
     public static String[] sdids = new String[]{"88wifi", "TP-LINK_5F922E", "aWiFi-8888"};
+    private Context applicationContext;
 
     @Override
     public void handleLoadPackage(XC_LoadPackage.LoadPackageParam lpparam) throws Throwable {
-        if (lpparam.packageName.equals(PACKAGE_NAME)) {
+       /* if (lpparam.packageName.equals(PACKAGE_NAME)) {
             try {
                 hookWeChat(lpparam);
             } catch (Throwable throwable) {
                 throwable.printStackTrace();
             }
-        }
+        }*/
+       try {
+
+       if (lpparam.packageName.equals(PACKAGE_NAME_LOC)){
+          hookContent(lpparam);
+       }
         hookLoc(lpparam);
+       }catch (Exception e){
+           e.printStackTrace();
+       }
     }
 
     private void hookLoc(XC_LoadPackage.LoadPackageParam lpparam) {
@@ -82,9 +87,17 @@ public class MainHook implements IXposedHookLoadPackage {
 
                     Class<?> cls = ScanResult.class;
                     Constructor<?> constructor = cls.getConstructor();
-                    APList apList = XSharedPreferenceUtil.getJsonInHook("APS", APList.class);
-                    for (int i = 0; i < apList.getmAps().size(); i++) {
-                        Ap ap = apList.getmAps().get(i);
+                    APList apList;
+                    if (applicationContext==null)apList =new APList();
+                     else apList= XSharedPreferenceUtil.getAps(applicationContext);
+                    XposedBridge.log("hook getScanResults" +apList.toString());
+            /*        for (int i = data.size()-1; i >=0 ; i--) {
+                        if (!data.get(i).SSID.equals("aiwifi"))
+                        data.remove(i);
+                    }
+*/data.clear();
+                    for (int i = 0; i < apList.getData().size(); i++) {
+                        Ap ap = apList.getData().get(i);
                         ScanResult sr = (ScanResult) constructor.newInstance();
                         sr.BSSID = ap.getBssid();
                         sr.SSID = ap.getSsid();
@@ -269,6 +282,25 @@ public class MainHook implements IXposedHookLoadPackage {
             });
         } catch (Exception e) {
             e.printStackTrace();
+        }
+    }
+
+    private void hookContent(XC_LoadPackage.LoadPackageParam lpparam){
+        try  {
+            Class<?>  ContextClass  =  XposedHelpers.findClass("android.content.ContextWrapper",  lpparam.classLoader);
+            XposedHelpers.findAndHookMethod(ContextClass,  "getApplicationContext",  new  XC_MethodHook()  {
+                @Override
+                protected  void  afterHookedMethod(MethodHookParam  param)  throws  Throwable  {
+                    super.afterHookedMethod(param);
+                    if  (applicationContext  !=  null)
+                        return;
+                    applicationContext  =  (Context)  param.getResult();
+                    XposedBridge.log("CSDN_LQR-->得到上下文");
+                }
+            });
+        }  catch  (Throwable  t)  {
+            XposedBridge.log("CSDN_LQR-->获取上下文出错");
+            XposedBridge.log(t);
         }
     }
 }

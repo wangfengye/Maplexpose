@@ -1,5 +1,25 @@
-## xpose出入
-> 目前实现了一个自定义微信地区的功能
+## xpose之路
+####. 目前实现了一个自定义微信地区的功能,支持微信6.1.8.升级后失效
+####. 目前实现了一个自定义微信地区的功能,支持微信6.1.8.升级后失效 hook定位数据,目的:获取百度,高德sdk提供的wifi数据
+> 实现原理,hook gps,基站数据的获取接口,将返回值置空.修改`getScanResults()`返回的wifi列表,这样sdk返回的定位数据就是依据我们伪造的wifi数据产生的
+
+##### 存在问题
+1. 返回的列表至少包含3个wifi,否则不使用wifi定位
+2. 伪造的wifi列表包含实际地址距离过大的wifi,或不存在的wifi,会出现位置漂移(例子: 随机给金华的wifi,mac:偶尔出现海南新疆的位置)
+3. 定位过于频繁,导致定位sdk崩溃,定位数据不变等问题(1s 10+次定位)
+#####.最终方案
+> 尽量使用同一点位采集到的wifi;模拟真实定位间隔(2s/次);
+
+##### android上的通用技术问题
+1. Hook函数是执行在被hook的应用的进程中,如何动态修改hook函数的变量?
+    1. SharedPreference共享,xposed自己封装了获取其他应用SharedPreference的XSharedPreference.缺点:android7.0后,不在支持`MODE_WORLD_READABLE`,及只能在6.0及之前使用
+    2. 使用ContentProvider提供跨应用的数据共享,需要hook`getApplicationContext`获取宿主的context才能使用
+2. 进程间通信,本应用需要知道定位状态,及同步的进程通信
+    1.broadcast,不支持同步
+    2.Messenger 本质binder 通过handler 实现, 只支持异步,不支持并发
+    3.aidl 本质binder ,支持小规模并发,同步, 最终采用该方式
+###### TODO
+1. 定位数据返回设计不够优雅, 百度,高德定位是异步定位, aidl接口也是单独的线程,目前通过for循环自旋,阻塞,等待,高德百度都完成,修改标志位,结束for循环,返回结果
 
 ## 使用工具
 * 方式一
