@@ -97,9 +97,9 @@ public class LocService extends IntentService {
     private void duePostError(APList posted) {
         Log.e("hook_service", "duePostError: ");
     }
-
+    ServiceConnection connection;
     private void bindAidl() {
-        ServiceConnection connection = new ServiceConnection() {
+       connection = new ServiceConnection() {
             @Override
             public void onServiceConnected(ComponentName name, IBinder service) {
                 mLocManger = LocManager.Stub.asInterface(service);
@@ -116,7 +116,12 @@ public class LocService extends IntentService {
         bindService(intent, connection, Context.BIND_AUTO_CREATE);
     }
 
+    @Override
+    public void onDestroy() {
+        super.onDestroy();
 
+       if (connection!=null)unbindService(connection);
+    }
 }
 
 

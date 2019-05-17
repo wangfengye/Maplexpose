@@ -26,7 +26,7 @@ public class XSharedPreferenceUtil {
     private static final String APP_PREFERENCES_KEY = "profile";
 
     public static SharedPreferences getAppPreference(Context context) {
-        SharedPreferences pre = context.getSharedPreferences(APP_PREFERENCES_KEY, Context.MODE_WORLD_READABLE);
+        SharedPreferences pre = context.getSharedPreferences(APP_PREFERENCES_KEY, Context.MODE_PRIVATE);
         return pre;
     }
     public static <T> T getJsonInHook(String key, Type type){

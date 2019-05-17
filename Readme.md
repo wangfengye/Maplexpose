@@ -21,6 +21,9 @@
 ###### TODO
 1. 定位数据返回设计不够优雅, 百度,高德定位是异步定位, aidl接口也是单独的线程,目前通过for循环自旋,阻塞,等待,高德百度都完成,修改标志位,结束for循环,返回结果
 
+##### crash记录
+1. `Servicehas leaked ServiceConnection c1 that was originally bound here` 原因service开启后未销毁
+2. 7.0+ 上使用SharedPreference的 `MODE_WORLD_READABLE`闪退.
 ## 使用工具
 * 方式一
 
