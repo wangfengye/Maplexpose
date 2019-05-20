@@ -1,7 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     package="com.maple.maplexpose">
+
     <uses-permission android:name="android.permission.INTERNET" />
+
     <application
         android:allowBackup="true"
         android:icon="@mipmap/ic_set"
@@ -26,20 +28,25 @@
             android:value="30" />
 
         <activity android:name=".MainActivity">
+
+        </activity>
+
+        <service
+            android:name=".LocService"
+            android:exported="false" />
+
+        <provider
+            android:name=".ScanResultsProvider"
+            android:authorities="com.maple.maplexpose"
+            android:exported="true" />
+
+        <activity android:name=".StartActivity" android:screenOrientation="portrait">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
-
-        <service
-            android:name=".LocService"
-            android:exported="false"></service>
-        <provider android:name=".ScanResultsProvider"
-            android:authorities="com.maple.maplexpose"
-            android:exported="true"
-            />
     </application>
 
 </manifest>

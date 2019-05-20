@@ -43,7 +43,7 @@ public class APList {
     public String toString() {
         StringBuilder builder = new StringBuilder();
         builder.append("APList\n");
-        if (data==null)return builder.toString();
+        if (data == null) return builder.toString();
         for (int i = 0; i < data.size(); i++) {
             builder.append(data.get(i).toString()).append("\n");
         }
