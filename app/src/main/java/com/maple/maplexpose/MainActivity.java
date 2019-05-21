@@ -10,6 +10,8 @@ import android.content.SharedPreferences;
 import android.database.Cursor;
 import android.database.MatrixCursor;
 import android.net.Uri;
+import android.net.wifi.ScanResult;
+import android.net.wifi.WifiManager;
 import android.os.Handler;
 import android.os.IBinder;
 import android.os.Message;
@@ -77,7 +79,7 @@ public class MainActivity extends AppCompatActivity {
                 ap.setSsid(ssid);
                 ap.setLevel(-Integer.parseInt(levelStr));
                 mAps.add(ap);
-                XSharedPreferenceUtil.setAps( mAps,MainActivity.this);
+                XSharedPreferenceUtil.setAps(mAps, MainActivity.this);
                 etBssid.getText().clear();
                 etSsid.getText().clear();
                 etLevel.getText().clear();
@@ -88,7 +90,7 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void onClick(View v) {
                 mAps.clear();
-                XSharedPreferenceUtil.setAps(mAps,MainActivity.this);
+                XSharedPreferenceUtil.setAps(mAps, MainActivity.this);
                 showText();
             }
         });
@@ -108,6 +110,7 @@ public class MainActivity extends AppCompatActivity {
             }
         });
 //        bindService();
+        showScanResults();
     }
 
     private void startLocService() {
@@ -189,5 +192,25 @@ public class MainActivity extends AppCompatActivity {
 
     }
 
+    private void showScanResults() {
+        WifiManager manager = (WifiManager) getApplicationContext().getSystemService(Context.WIFI_SERVICE);
+        manager.setWifiEnabled(true);
+        manager.startScan();
+        List<ScanResult> scanResults = manager.getScanResults();
+        StringBuilder builder = new StringBuilder();
+        for (ScanResult s : scanResults) {
+            builder.setLength(0);
+            builder.append(s.SSID
+                    + ',' + s.BSSID
+                    + ',' + s.level
+                    + ',' + s.capabilities
+                    + ',' + s.frequency
+                    + '.' + s.channelWidth
+                    + ',' + s.centerFreq0
+                    + ',' + s.centerFreq1
+                    + ',' + s.timestamp);
+            Log.i(TAG, "current wifi: "+builder.toString());
+        }
 
+    }
 }

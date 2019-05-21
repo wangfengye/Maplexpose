@@ -44,7 +44,7 @@ public class MainHook implements IXposedHookLoadPackage {
     public static String[] macs = new String[]{"00:07:bf:a0:3d:32", "00:23:cd:5f:92:2e", "06:95:73:30:6a:1e"};
     //public static String[] sdids = new String[]{"ASCEND10_5G", "ASCEND9", "HHHHHH"};
     public static String[] sdids = new String[]{"88wifi", "TP-LINK_5F922E", "aWiFi-8888"};
-    private Context applicationContext;
+    private static Context applicationContext;
 
     @Override
     public void handleLoadPackage(XC_LoadPackage.LoadPackageParam lpparam) throws Throwable {
@@ -57,10 +57,10 @@ public class MainHook implements IXposedHookLoadPackage {
         }*/
        try {
 
-       if (lpparam.packageName.equals(PACKAGE_NAME_LOC)){
-          hookContent(lpparam);
-       }
-        hookLoc(lpparam);
+
+        if (!lpparam.packageName.equals("com.android.systemui")&&!lpparam.packageName.equals("com.android.settings")){//屏蔽系统读取
+           hookContent(lpparam);
+        hookLoc(lpparam);}
        }catch (Exception e){
            e.printStackTrace();
        }
@@ -72,7 +72,7 @@ public class MainHook implements IXposedHookLoadPackage {
 
             @Override
             protected void afterHookedMethod(MethodHookParam param) throws Throwable {
-                XposedBridge.log("hook getScanResults" + (null == param.getResult()));
+                XposedBridge.log("hook getScanResults" +lpparam.packageName);
 
                 try {
                     long timeStamp = 0L;
@@ -103,7 +103,7 @@ public class MainHook implements IXposedHookLoadPackage {
                         sr.SSID = ap.getSsid();
                         sr.frequency = frequency;
                         sr.level = ap.getLevel();
-                        sr.capabilities = "[ESS]";
+                        sr.capabilities = "[WPA-PSK-CCMP][WPA2-PSK-CCMP][ESS]";
                         sr.timestamp = timeStamp;
                         data.add(sr);
                     }
