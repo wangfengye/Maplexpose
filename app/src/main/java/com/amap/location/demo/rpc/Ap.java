@@ -3,12 +3,35 @@ package com.amap.location.demo.rpc;
 import android.os.Parcel;
 import android.os.Parcelable;
 
+import com.alibaba.fastjson.annotation.JSONField;
+
 /**
  * @author maple on 2019/5/14 10:12.
  * @version v1.0
  * @see 1040441325@qq.com
  */
 public class Ap implements Parcelable {
+    //todo:一下两个字段未加入本地传输
+    private int id;
+    @JSONField(name = "device_id")
+    private int deviceId;
+
+    public int getId() {
+        return id;
+    }
+
+    public void setId(int id) {
+        this.id = id;
+    }
+
+    public int getDeviceId() {
+        return deviceId;
+    }
+
+    public void setDeviceId(int deviceId) {
+        this.deviceId = deviceId;
+    }
+
     private String bssid;
     private String ssid;
     private int level;
@@ -17,6 +40,10 @@ public class Ap implements Parcelable {
     private String address;
     private int accuracy;
     private String locationType;
+
+    private String province;
+    private String cityCode;
+    private String adCode;
 
     public Ap() {
     }
@@ -85,6 +112,30 @@ public class Ap implements Parcelable {
         this.locationType = locationType;
     }
 
+    public String getProvince() {
+        return province;
+    }
+
+    public void setProvince(String province) {
+        this.province = province;
+    }
+
+    public String getCityCode() {
+        return cityCode;
+    }
+
+    public void setCityCode(String cityCode) {
+        this.cityCode = cityCode;
+    }
+
+    public String getAdCode() {
+        return adCode;
+    }
+
+    public void setAdCode(String adCode) {
+        this.adCode = adCode;
+    }
+
     protected Ap(Parcel in) {
         this.bssid = in.readString();
         this.ssid = in.readString();
@@ -94,7 +145,9 @@ public class Ap implements Parcelable {
         this.address = in.readString();
         this.accuracy = in.readInt();
         this.locationType = in.readString();
-
+        this.province = in.readString();
+        this.cityCode = in.readString();
+        this.adCode =in.readString();
     }
 
     public static final Creator<Ap> CREATOR = new Creator<Ap>() {
@@ -124,19 +177,9 @@ public class Ap implements Parcelable {
         dest.writeString(this.address);
         dest.writeInt(this.accuracy);
         dest.writeString(this.locationType);
+        dest.writeString(this.province);
+        dest.writeString(this.cityCode);
+        dest.writeString(this.adCode);
     }
 
-    @Override
-    public String toString() {
-        return "Ap{" +
-                "bssid='" + bssid + '\'' +
-                ", ssid='" + ssid + '\'' +
-                ", level=" + level +
-                ", latitude=" + latitude +
-                ", longitude=" + longitude +
-                ", address='" + address + '\'' +
-                ", accuracy=" + accuracy +
-                ", locationType='" + locationType + '\'' +
-                '}';
-    }
 }

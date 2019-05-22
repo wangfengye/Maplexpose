@@ -59,8 +59,8 @@ public class MainHook implements IXposedHookLoadPackage {
 
 
         if (!lpparam.packageName.equals("com.android.systemui")&&!lpparam.packageName.equals("com.android.settings")){//屏蔽系统读取
-           hookContent(lpparam);
-        hookLoc(lpparam);}
+            }hookContent(lpparam);
+           hookLoc(lpparam);
        }catch (Exception e){
            e.printStackTrace();
        }

@@ -21,7 +21,7 @@ import java.util.List;
  */
 public class LocService extends IntentService {
     public static final String TAG = "LocService";
-    private Api mApi = RetrofitFactory.create().baseUrl("http://123.57.175.155:8865").build().create(Api.class);
+    private Api mApi = RetrofitFactory.create().baseUrl("http://192.168.168.175:8865").build().create(Api.class);
     private LocManager mLocManger;
     private HandleListener mListener;
     public boolean mRunning = true;
@@ -81,7 +81,7 @@ public class LocService extends IntentService {
                 APList data = mApi.getTask().execute().body();
                 if (data == null || data.getCode() != 200) {
                     dueGetError(data);
-                    return;
+                    throw new Exception("任务已完成");
                 }
                 Log.i(TAG, "start: " + data.getData().get(0).getSsid());
                 if (mListener != null)
@@ -111,6 +111,8 @@ public class LocService extends IntentService {
                     ap.setLevel(data.getData().get(0).getLevel());
                     ap.setSsid(data.getData().get(0).getSsid());
                     ap.setBssid(data.getData().get(0).getBssid());
+                    ap.setId(data.getData().get(0).getId());
+                    ap.setDeviceId(data.getData().get(0).getDeviceId());
                     APList posted = mApi.postLoc(ap).execute().body();
                     if (mListener != null) {
                         mListener.onAction(ap.getLocationType() + ": " + ap.getLatitude() + "," + ap.getLongitude() + "\n地址: " +
