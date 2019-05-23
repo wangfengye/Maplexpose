@@ -22,7 +22,7 @@ import java.util.List;
 public class LocService extends IntentService {
     public static final String TAG = "LocService";
     //private Api mApi = RetrofitFactory.create().baseUrl("http://192.168.168.175:8865").build().create(Api.class);
-    private Api mApi = new MqttApiImpl();
+    private Api mApi ;
     private LocManager mLocManger;
     private HandleListener mListener;
     public boolean mRunning = true;
@@ -75,7 +75,9 @@ public class LocService extends IntentService {
         // 修改 scanResults;
         // 执行定位
         // 上报定位结果
-
+        //private Api mApi = RetrofitFactory.create().baseUrl("http://192.168.168.175:8865").build().create(Api.class);
+        if (mApi==null)
+            mApi=new MqttApiImpl().init(getApplicationContext(), "tcp://192.168.168.149:1883");
         for (; ; ) {
             if (!mRunning) break;
             try {

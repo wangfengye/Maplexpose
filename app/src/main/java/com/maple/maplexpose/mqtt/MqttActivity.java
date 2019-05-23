@@ -35,7 +35,6 @@ public class MqttActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_mqtt);
         mTv = findViewById(R.id.tv_content);
-
         mClient = new MqttAndroidClient(getApplicationContext(), serverUri, clientId);
         mClient.setCallback(new MqttCallbackExtended() {
             @Override

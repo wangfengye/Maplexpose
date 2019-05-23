@@ -13,6 +13,11 @@ import java.util.List;
 public class APList {
     private int code;
     private List<Ap> data;
+    public static APList success(){
+        APList data = new APList();
+        data.setCode(200);
+        return data;
+    }
 
     public int getCode() {
         return code;
