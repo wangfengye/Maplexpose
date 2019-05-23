@@ -1,39 +1,30 @@
 package com.maple.maplexpose;
 
+import android.annotation.SuppressLint;
 import android.content.ComponentName;
-import android.content.ContentResolver;
-import android.content.ContentValues;
 import android.content.Context;
 import android.content.Intent;
 import android.content.ServiceConnection;
-import android.content.SharedPreferences;
-import android.database.Cursor;
-import android.database.MatrixCursor;
-import android.net.Uri;
 import android.net.wifi.ScanResult;
 import android.net.wifi.WifiManager;
+import android.os.Bundle;
 import android.os.Handler;
 import android.os.IBinder;
 import android.os.Message;
 import android.os.Messenger;
 import android.os.RemoteException;
-import android.preference.PreferenceManager;
 import android.support.v7.app.AppCompatActivity;
-import android.os.Bundle;
-import android.telephony.CellInfo;
-import android.telephony.cdma.CdmaCellLocation;
-import android.telephony.gsm.GsmCellLocation;
 import android.util.Log;
 import android.view.View;
 import android.widget.EditText;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import com.alibaba.fastjson.JSON;
 import com.amap.location.demo.rpc.Ap;
 import com.amap.location.demo.rpc.LocManager;
+import com.maple.maplexpose.mqtt.MqttActivity;
+import com.maple.maplexpose.util.FixLinesStr;
 
-import java.util.ArrayList;
 import java.util.List;
 
 public class MainActivity extends AppCompatActivity {
@@ -41,6 +32,8 @@ public class MainActivity extends AppCompatActivity {
     public static TextView mTv;
     APList mAps;
     private Messenger mService;
+    private FixLinesStr mFixLinesStr = new FixLinesStr(12);
+    @SuppressLint("HandlerLeak")
     private Messenger mMessenger = new Messenger(new Handler() {
         @Override
         public void handleMessage(Message msg) {
@@ -97,37 +90,24 @@ public class MainActivity extends AppCompatActivity {
         findViewById(R.id.btn_loc).setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                // sendBroad();
-                // sendWithMEssenger();
-                //sendWithAidl();
-                startLocService();
+                sendBroad();//发送广播
             }
         });
-        findViewById(R.id.btn_loc_1).setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                sendBroad();
-            }
-        });
-//        bindService();
-        showScanResults();
+        findViewById(R.id.btn_mqtt).setOnClickListener(v -> startActivity(new Intent(this, MqttActivity.class)));
     }
 
-    private void startLocService() {
-        Intent intent = new Intent(this, LocService.class);
-        startService(intent);
-    }
-
+    /**
+     * 发送请求定位的广播
+     */
     private void sendBroad() {
         Intent intent = new Intent();
         intent.setAction("com.maple.maplexpose.loc");
         sendBroadcast(intent);
     }
 
-    private void showText() {
-        mTv.setText(mAps.toString());
-    }
-
+    /**
+     * Messenger 服务启动
+     */
     private void bindService() {
         ServiceConnection connection = new ServiceConnection() {
             @Override
@@ -144,9 +124,11 @@ public class MainActivity extends AppCompatActivity {
         intent.setAction("android.intent.action.HOOKMESSENGER");
         intent.setPackage("com.amap.location.demo");
         bindService(intent, connection, Context.BIND_AUTO_CREATE);
-        bindAidl();
     }
 
+    /**
+     * Messenger 获取定位
+     */
     private void sendWithMEssenger() {
         Message msgFromClient = new Message();
         msgFromClient.what = 1;
@@ -158,13 +140,10 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
-    @Override
-    protected void onDestroy() {
-        mTv = null;
 
-        super.onDestroy();
-    }
-
+    /**
+     * 启动aidl
+     */
     private void bindAidl() {
         ServiceConnection connection = new ServiceConnection() {
             @Override
@@ -183,6 +162,9 @@ public class MainActivity extends AppCompatActivity {
         bindService(intent, connection, Context.BIND_AUTO_CREATE);
     }
 
+    /**
+     * 发送aidl
+     */
     private void sendWithAidl() {
         try {
             Log.i(TAG, "sendWithAidl: " + mLocManger.loc());
@@ -192,6 +174,9 @@ public class MainActivity extends AppCompatActivity {
 
     }
 
+    /**
+     * log 打印当前wifi列表
+     */
     private void showScanResults() {
         WifiManager manager = (WifiManager) getApplicationContext().getSystemService(Context.WIFI_SERVICE);
         manager.setWifiEnabled(true);
@@ -209,8 +194,19 @@ public class MainActivity extends AppCompatActivity {
                     + ',' + s.centerFreq0
                     + ',' + s.centerFreq1
                     + ',' + s.timestamp);
-            Log.i(TAG, "current wifi: "+builder.toString());
+            Log.i(TAG, "current wifi: " + builder.toString());
         }
 
+    }
+
+    private void showText() {
+        mFixLinesStr.clear();
+        mTv.setText(mFixLinesStr.put(mAps.toString()));
+    }
+
+    @Override
+    protected void onDestroy() {
+        mTv = null;
+        super.onDestroy();
     }
 }

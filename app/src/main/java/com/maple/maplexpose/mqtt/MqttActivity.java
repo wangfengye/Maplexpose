@@ -1,8 +1,7 @@
 package com.maple.maplexpose.mqtt;
 
-import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
-import android.telecom.Call;
+import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.widget.TextView;
 
@@ -14,17 +13,12 @@ import org.eclipse.paho.client.mqttv3.DisconnectedBufferOptions;
 import org.eclipse.paho.client.mqttv3.IMqttActionListener;
 import org.eclipse.paho.client.mqttv3.IMqttDeliveryToken;
 import org.eclipse.paho.client.mqttv3.IMqttToken;
-import org.eclipse.paho.client.mqttv3.MqttCallback;
 import org.eclipse.paho.client.mqttv3.MqttCallbackExtended;
-import org.eclipse.paho.client.mqttv3.MqttClient;
 import org.eclipse.paho.client.mqttv3.MqttConnectOptions;
 import org.eclipse.paho.client.mqttv3.MqttException;
 import org.eclipse.paho.client.mqttv3.MqttMessage;
 
-import org.eclipse.paho.client.mqttv3.MqttTopic;
-import org.eclipse.paho.client.mqttv3.persist.MqttDefaultFilePersistence;
-
-
+@SuppressWarnings("all")
 public class MqttActivity extends AppCompatActivity {
     public static final String TAG = "MqttActivity";
     private TextView mTv;
@@ -34,6 +28,7 @@ public class MqttActivity extends AppCompatActivity {
     String clientId = "ExampleAndroidClient";
     final String subscriptionTopic = "/device/+/upward";
     private FixLinesStr mFixLInesStr = new FixLinesStr();
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -55,6 +50,7 @@ public class MqttActivity extends AppCompatActivity {
             }
 
             @Override
+            @SuppressWarnings("all")
             public void messageArrived(String topic, MqttMessage message) throws Exception {
                 Log.i(TAG, "messageArrived: " + new String(message.getPayload()));
                 show(new String(message.getPayload()));
@@ -92,10 +88,10 @@ public class MqttActivity extends AppCompatActivity {
             e.printStackTrace();
         }
         // publish
-        findViewById(R.id.btn_publish).setOnClickListener(v->{
-            String data ="当前时间戳: "+ System.currentTimeMillis()/1000;
+        findViewById(R.id.btn_publish).setOnClickListener(v -> {
+            String data = "当前时间戳: " + System.currentTimeMillis() / 1000;
             try {
-                mClient.publish("AndroidPush",new MqttMessage(data.getBytes()));
+                mClient.publish("AndroidPush", new MqttMessage(data.getBytes()));
             } catch (MqttException e) {
                 e.printStackTrace();
             }
@@ -126,7 +122,6 @@ public class MqttActivity extends AppCompatActivity {
         super.onResume();
     }
 
-    StringBuilder builder = new StringBuilder();
 
     private void show(String s) {
         runOnUiThread(() -> mTv.setText(mFixLInesStr.put(s)));

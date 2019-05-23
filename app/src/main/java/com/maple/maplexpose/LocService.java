@@ -2,8 +2,8 @@ package com.maple.maplexpose;
 
 import android.app.IntentService;
 import android.content.ComponentName;
-import android.content.Intent;
 import android.content.Context;
+import android.content.Intent;
 import android.content.ServiceConnection;
 import android.os.Binder;
 import android.os.IBinder;
@@ -12,7 +12,7 @@ import android.util.Log;
 
 import com.amap.location.demo.rpc.Ap;
 import com.amap.location.demo.rpc.LocManager;
-import com.maple.mapleretrofit.RetrofitFactory;
+import com.maple.maplexpose.mqtt.MqttApiImpl;
 
 import java.util.List;
 
@@ -21,11 +21,8 @@ import java.util.List;
  */
 public class LocService extends IntentService {
     public static final String TAG = "LocService";
-    private Api mApi = RetrofitFactory.create().baseUrl("http://192.168.168.175:8875.+-" +
-            ".+-" +
-            ".+-" +
-            "QASRF8.+306" +
-            " ").build().create(Api.class);
+    //private Api mApi = RetrofitFactory.create().baseUrl("http://192.168.168.175:8865").build().create(Api.class);
+    private Api mApi = new MqttApiImpl();
     private LocManager mLocManger;
     private HandleListener mListener;
     public boolean mRunning = true;
@@ -177,8 +174,8 @@ public class LocService extends IntentService {
         super.onDestroy();
         try {
             if (connection != null) unbindService(connection);
-        }catch (Exception e){
-            Log.e(TAG, "onDestroy: ",e );
+        } catch (Exception e) {
+            Log.e(TAG, "onDestroy: ", e);
         }
 
     }

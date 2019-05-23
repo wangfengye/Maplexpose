@@ -22,20 +22,16 @@
         android:id="@+id/btn_clear"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_margin="32dp"
+        android:layout_margin="4dp"
         android:text="清空" />
 
     <Button
         android:id="@+id/btn_loc"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
+        android:layout_margin="4dp"
         android:text="请求定位" />
-    <Button
-        android:id="@+id/btn_loc_1"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
 
-        android:text="请求定位 一次" />
     <android.support.v7.widget.AppCompatEditText
         android:id="@+id/et_bssid"
         android:layout_width="match_parent"
@@ -68,6 +64,12 @@
         android:id="@+id/btn_add"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_margin="32dp"
+        android:layout_margin="8dp"
         android:text="增加" />
+    <Button
+        android:id="@+id/btn_mqtt"
+        android:layout_margin="8dp"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="MQTT调试"/>
 </LinearLayout>
