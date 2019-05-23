@@ -19,6 +19,8 @@
     1.broadcast,不支持同步
     2.Messenger 本质binder 通过handler 实现, 只支持异步,不支持并发
     3.aidl 本质binder ,支持小规模并发,同步, 最终采用该方式
+3. AIDL中Parcelable 实现时必须保证完全一致
+   1. 我在一端加了两个字段,但未将该字段加入序列化中,导致解析错位
 
 
 ###### 2.0 Mqtt引入

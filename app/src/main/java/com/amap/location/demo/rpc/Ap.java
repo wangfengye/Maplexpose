@@ -137,6 +137,8 @@ public class Ap implements Parcelable {
     }
 
     protected Ap(Parcel in) {
+        this.id = in.readInt();
+        this.deviceId = in.readInt();
         this.bssid = in.readString();
         this.ssid = in.readString();
         this.level = in.readInt();
@@ -179,6 +181,8 @@ public class Ap implements Parcelable {
 
     @Override
     public void writeToParcel(Parcel dest, int flags) {
+        dest.writeInt(this.id);
+        dest.writeInt(this.deviceId);
         dest.writeString(this.bssid);
         dest.writeString(this.ssid);
         dest.writeInt(this.level);
