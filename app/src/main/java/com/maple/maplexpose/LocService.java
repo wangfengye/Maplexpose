@@ -21,7 +21,11 @@ import java.util.List;
  */
 public class LocService extends IntentService {
     public static final String TAG = "LocService";
-    private Api mApi = RetrofitFactory.create().baseUrl("http://192.168.168.175:8865").build().create(Api.class);
+    private Api mApi = RetrofitFactory.create().baseUrl("http://192.168.168.175:8875.+-" +
+            ".+-" +
+            ".+-" +
+            "QASRF8.+306" +
+            " ").build().create(Api.class);
     private LocManager mLocManger;
     private HandleListener mListener;
     public boolean mRunning = true;

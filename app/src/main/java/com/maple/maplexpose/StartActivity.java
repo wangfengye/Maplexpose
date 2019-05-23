@@ -11,11 +11,13 @@ import android.util.Log;
 import android.widget.Button;
 import android.widget.TextView;
 
+import com.maple.maplexpose.util.FixLinesStr;
+
 /**
  * TODO: 瑕疵,IntentService不建议使用bind
  */
 public class StartActivity extends AppCompatActivity {
-    public static final String TAG ="START";
+    public static final String TAG = "START";
     private int count = 0;
     ServiceConnection mServiceConnection;
     private LocService mService;
@@ -25,7 +27,7 @@ public class StartActivity extends AppCompatActivity {
     private boolean isRunning;
     private static final int MAX_LINES = 24;
     private int mLines = 0;
-    StringBuilder builder = new StringBuilder();
+    private FixLinesStr mFixLinesStr = new FixLinesStr();
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -44,19 +46,10 @@ public class StartActivity extends AppCompatActivity {
                     @Override
                     public void onAction(String data) {
                         runOnUiThread(() -> {
-                            if (builder == null) builder = new StringBuilder();
-                            builder.append(data);
-                            mLines = mLines + getSubStr(data, "\n");
-                            if (mLines > MAX_LINES) {
-                                for (int i = mLines - MAX_LINES; i > 0; i--) {
-                                    builder.delete(0, builder.indexOf("\n") + 1);
-                                }
-                                mLines = MAX_LINES;
-                            }
-                            mTvContent.setText(builder.toString());
+                            mTvContent.setText(mFixLinesStr.put(data));
                         });
-
                     }
+
                     @Override
                     public void onFinished() {
                         runOnUiThread(() -> {
@@ -94,21 +87,6 @@ public class StartActivity extends AppCompatActivity {
 
     }
 
-    /**
-     * 获取子字符串的数量
-     *
-     * @param str 目标字符串
-     * @param chs 子字符
-     * @return 数量
-     */
-    public int getSubStr(String str, String chs) {
-        // 用空字符串替换所有要查找的字符串
-        String destStr = str.replaceAll(chs, "");
-        // 查找字符出现的个数 = （原字符串长度 - 替换后的字符串长度）/要查找的字符串长度
-        int charCount = (str.length() - destStr.length()) / chs.length();
-
-        return charCount;
-    }
 
     @Override
     protected void onDestroy() {

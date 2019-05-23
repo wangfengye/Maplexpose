@@ -150,6 +150,16 @@ public class Ap implements Parcelable {
         this.adCode =in.readString();
     }
 
+    @Override
+    public String toString() {
+        return "Ap{" +
+                "deviceId=" + deviceId +
+                ", bssid='" + bssid + '\'' +
+                ", ssid='" + ssid + '\'' +
+                ", level=" + level +
+                '}';
+    }
+
     public static final Creator<Ap> CREATOR = new Creator<Ap>() {
         @Override
         public Ap createFromParcel(Parcel in) {
