@@ -10,6 +10,7 @@ import android.os.IBinder;
 import android.support.annotation.Nullable;
 import android.util.Log;
 
+import com.alibaba.fastjson.JSON;
 import com.amap.location.demo.rpc.Ap;
 import com.amap.location.demo.rpc.LocManager;
 import com.maple.maplexpose.mqtt.MqttApiImpl;
@@ -21,6 +22,7 @@ import java.util.List;
  */
 public class LocService extends IntentService {
     public static final String TAG = "LocService";
+    public static final int TYPE_DEBUG = 1;
     //private Api mApi = RetrofitFactory.create().baseUrl("http://192.168.168.175:8865").build().create(Api.class);
     private Api mApi ;
     private LocManager mLocManger;
@@ -116,6 +118,7 @@ public class LocService extends IntentService {
                     ap.setBssid(data.getData().get(0).getBssid());
                     ap.setId(data.getData().get(0).getId());
                     ap.setDeviceId(data.getData().get(0).getDeviceId());
+                    if (data.getType()== TYPE_DEBUG)ap.setDebug(JSON.toJSONString(data));
                     APList posted = mApi.postLoc(ap).execute().body();
                     if (mListener != null) {
                         mListener.onAction(ap.getLocationType() + ": " + ap.getLatitude() + "," + ap.getLongitude() + "\n地址: " +

@@ -1,5 +1,8 @@
 package com.maple.maplexpose;
 
+import com.alibaba.fastjson.JSON;
+import com.amap.location.demo.rpc.Ap;
+
 import org.junit.Test;
 
 import static org.junit.Assert.*;
@@ -12,6 +15,9 @@ import static org.junit.Assert.*;
 public class ExampleUnitTest {
     @Test
     public void addition_isCorrect() {
+        APList apList = new APList();
+        apList.add(new Ap());
+        System.out.print(JSON.toJSON(apList));
         assertEquals(4, 2 + 2);
     }
 }

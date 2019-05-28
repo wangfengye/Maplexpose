@@ -11,10 +11,78 @@ import com.alibaba.fastjson.annotation.JSONField;
  * @see 1040441325@qq.com
  */
 public class Ap implements Parcelable {
-    //todo:一下两个字段未加入本地传输
     private int id;
     @JSONField(name = "device_id")
     private int deviceId;
+
+    private String bssid;
+    private String ssid;
+    private int level;
+    private double latitude;
+    private double longitude;
+    private String address;
+    private int accuracy;
+    private String locationType;
+
+    private String province;
+    private String cityCode;
+    private String adCode;
+    private String debug;
+
+    public Ap() {
+    }
+
+    protected Ap(Parcel in) {
+        id = in.readInt();
+        deviceId = in.readInt();
+        bssid = in.readString();
+        ssid = in.readString();
+        level = in.readInt();
+        latitude = in.readDouble();
+        longitude = in.readDouble();
+        address = in.readString();
+        accuracy = in.readInt();
+        locationType = in.readString();
+        province = in.readString();
+        cityCode = in.readString();
+        adCode = in.readString();
+        debug = in.readString();
+    }
+
+    @Override
+    public void writeToParcel(Parcel dest, int flags) {
+        dest.writeInt(id);
+        dest.writeInt(deviceId);
+        dest.writeString(bssid);
+        dest.writeString(ssid);
+        dest.writeInt(level);
+        dest.writeDouble(latitude);
+        dest.writeDouble(longitude);
+        dest.writeString(address);
+        dest.writeInt(accuracy);
+        dest.writeString(locationType);
+        dest.writeString(province);
+        dest.writeString(cityCode);
+        dest.writeString(adCode);
+        dest.writeString(debug);
+    }
+
+    @Override
+    public int describeContents() {
+        return 0;
+    }
+
+    public static final Creator<Ap> CREATOR = new Creator<Ap>() {
+        @Override
+        public Ap createFromParcel(Parcel in) {
+            return new Ap(in);
+        }
+
+        @Override
+        public Ap[] newArray(int size) {
+            return new Ap[size];
+        }
+    };
 
     public int getId() {
         return id;
@@ -30,22 +98,6 @@ public class Ap implements Parcelable {
 
     public void setDeviceId(int deviceId) {
         this.deviceId = deviceId;
-    }
-
-    private String bssid;
-    private String ssid;
-    private int level;
-    private double latitude;
-    private double longitude;
-    private String address;
-    private int accuracy;
-    private String locationType;
-
-    private String province;
-    private String cityCode;
-    private String adCode;
-
-    public Ap() {
     }
 
     public String getBssid() {
@@ -136,64 +188,11 @@ public class Ap implements Parcelable {
         this.adCode = adCode;
     }
 
-    protected Ap(Parcel in) {
-        this.id = in.readInt();
-        this.deviceId = in.readInt();
-        this.bssid = in.readString();
-        this.ssid = in.readString();
-        this.level = in.readInt();
-        this.latitude = in.readDouble();
-        this.longitude = in.readDouble();
-        this.address = in.readString();
-        this.accuracy = in.readInt();
-        this.locationType = in.readString();
-        this.province = in.readString();
-        this.cityCode = in.readString();
-        this.adCode =in.readString();
+    public String getDebug() {
+        return debug;
     }
 
-    @Override
-    public String toString() {
-        return "Ap{" +
-                "deviceId=" + deviceId +
-                ", bssid='" + bssid + '\'' +
-                ", ssid='" + ssid + '\'' +
-                ", level=" + level +
-                '}';
+    public void setDebug(String debug) {
+        this.debug = debug;
     }
-
-    public static final Creator<Ap> CREATOR = new Creator<Ap>() {
-        @Override
-        public Ap createFromParcel(Parcel in) {
-            return new Ap(in);
-        }
-
-        @Override
-        public Ap[] newArray(int size) {
-            return new Ap[size];
-        }
-    };
-
-    @Override
-    public int describeContents() {
-        return 0;
-    }
-
-    @Override
-    public void writeToParcel(Parcel dest, int flags) {
-        dest.writeInt(this.id);
-        dest.writeInt(this.deviceId);
-        dest.writeString(this.bssid);
-        dest.writeString(this.ssid);
-        dest.writeInt(this.level);
-        dest.writeDouble(this.latitude);
-        dest.writeDouble(this.longitude);
-        dest.writeString(this.address);
-        dest.writeInt(this.accuracy);
-        dest.writeString(this.locationType);
-        dest.writeString(this.province);
-        dest.writeString(this.cityCode);
-        dest.writeString(this.adCode);
-    }
-
 }

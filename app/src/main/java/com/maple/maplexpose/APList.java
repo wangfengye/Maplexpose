@@ -12,11 +12,20 @@ import java.util.List;
  */
 public class APList {
     private int code;
+    private int type;
     private List<Ap> data;
     public static APList success(){
         APList data = new APList();
         data.setCode(200);
         return data;
+    }
+
+    public int getType() {
+        return type;
+    }
+
+    public void setType(int type) {
+        this.type = type;
     }
 
     public int getCode() {
