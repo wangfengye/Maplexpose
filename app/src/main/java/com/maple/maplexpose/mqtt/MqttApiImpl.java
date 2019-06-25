@@ -23,6 +23,8 @@ import java.io.IOException;
 import java.net.NetworkInterface;
 import java.net.SocketException;
 import java.util.concurrent.BlockingQueue;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 import java.util.concurrent.LinkedBlockingDeque;
 
 import okhttp3.Request;
@@ -40,11 +42,16 @@ public class MqttApiImpl implements Api {
     private static final String CLIENT_ID = getMac();
     private static final String SUB = "loc_req/" + getMac();
     private static final String PUB = "loc_res/" + getMac();
+    private static final String REG =  "register/"+ getMac();
+    public static final int QOS = 1;
     private MqttAndroidClient mClient;
     private BlockingQueue<APList> queue = new LinkedBlockingDeque<>();
+    private int RETRY_SECOND = 1;
+    private ExecutorService mPool = Executors.newFixedThreadPool(1);
 
     public MqttApiImpl init(Context context, String serverUri) {
         return this.init(context, serverUri, true);
+
     }
 
     public MqttApiImpl init(Context context, String serverUri, boolean isFirst) {
@@ -68,8 +75,8 @@ public class MqttApiImpl implements Api {
                     String json = new String(message.getPayload());
                     APList apList = JSON.parseObject(json, APList.class);
                     queue.offer(apList);
-                }catch (JSONException e){
-                    Log.e(TAG, "messageArrived: "+e.getMessage());
+                } catch (JSONException e) {
+                    Log.e(TAG, "messageArrived: " + e.getMessage());
                 }
 
             }
@@ -82,10 +89,13 @@ public class MqttApiImpl implements Api {
         MqttConnectOptions mqttConnectOptions = new MqttConnectOptions();
         mqttConnectOptions.setAutomaticReconnect(true);
         mqttConnectOptions.setCleanSession(false);
+        mqttConnectOptions.setWill(REG,"offline".getBytes(),QOS,true);
         try {
+            Log.e(TAG, "init: " + Thread.currentThread().getName());
             mClient.connect(mqttConnectOptions, null, new IMqttActionListener() {
                 @Override
                 public void onSuccess(IMqttToken asyncActionToken) {
+                    RETRY_SECOND = 1;
                     DisconnectedBufferOptions disconnectedBufferOptions = new DisconnectedBufferOptions();
                     disconnectedBufferOptions.setBufferEnabled(true);
                     disconnectedBufferOptions.setBufferSize(100);
@@ -94,18 +104,33 @@ public class MqttApiImpl implements Api {
                     mClient.setBufferOpts(disconnectedBufferOptions);
                     Log.i(TAG, "connect-onSuccess: ");
                     sub();
+                    try {
+                        mClient.publish(REG,"online".getBytes(), QOS,true);
+                    } catch (MqttException e) {
+                        e.printStackTrace();
+                    }
                 }
 
                 @Override
                 public void onFailure(IMqttToken asyncActionToken, Throwable exception) {
-                    Log.e(TAG, "onFailure: ",exception );
-                    init(context, serverUri, false);
+                    Log.e(TAG, "onFailure--" + Thread.currentThread().getName() + ": " + exception.getMessage());
+                    mPool.execute(() -> {
+                        try {
+                            Thread.sleep(RETRY_SECOND * 1000);
+                            RETRY_SECOND = RETRY_SECOND << 1;
+                        } catch (InterruptedException e) {
+                            e.printStackTrace();
+                        }
+                        init(context, serverUri, false);
+                    });
+
                 }
             });
         } catch (MqttException e) {
             e.printStackTrace();
             init(context, serverUri, false);
         }
+
         return this;
     }
 
@@ -218,8 +243,9 @@ public class MqttApiImpl implements Api {
         }
         return mac;
     }
-    public void ondestory(){
-        if (mClient!=null) {
+
+    public void ondestory() {
+        if (mClient != null) {
             try {
                 mClient.disconnect();
             } catch (MqttException e) {

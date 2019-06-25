@@ -6,8 +6,8 @@ import android.content.DialogInterface;
 import android.location.Location;
 import android.location.LocationManager;
 import android.net.wifi.ScanResult;
+import android.os.Bundle;
 import android.telephony.CellLocation;
-import android.test.mock.MockContentResolver;
 import android.widget.EditText;
 
 import com.amap.location.demo.rpc.Ap;
@@ -48,6 +48,7 @@ public class MainHook implements IXposedHookLoadPackage {
 
     @Override
     public void handleLoadPackage(XC_LoadPackage.LoadPackageParam lpparam) throws Throwable {
+        // 微信hook
        /* if (lpparam.packageName.equals(PACKAGE_NAME)) {
             try {
                 hookWeChat(lpparam);
@@ -55,15 +56,39 @@ public class MainHook implements IXposedHookLoadPackage {
                 throwable.printStackTrace();
             }
         }*/
-       try {
+        // hook wifi列表
+        try {
+            if (!lpparam.packageName.equals("com.android.systemui") && !lpparam.packageName.equals("com.android.settings")) {//屏蔽系统读取
+                hookLoc(lpparam);
+            }
+            hookContent(lpparam);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        // wifi万能钥匙hook
+        // hookWifiKey(lpparam);
+    }
+
+    private void hookWifiKey(XC_LoadPackage.LoadPackageParam lpparam) {
+/*        XposedHelpers.findAndHookMethod("com.wifi.connect.ui.a", lpparam.classLoader, "a", String.class, int.class, NetworkInfo.State.class, new XC_MethodHook() {
+            @Override
+            protected void afterHookedMethod(MethodHookParam param) throws Throwable {
+                String s = (String) param.args[0];
+                ArrayList<Integer> a = new ArrayList<>();
+                a.se
+                XposedBridge.log("wifiKey" + s);
+                super.afterHookedMethod(param);
+            }
+        });*/
+        XposedHelpers.findAndHookMethod("com.wifi.connect.ui.ConnectFragment", lpparam.classLoader, "onCreate", Bundle.class, new XC_MethodHook() {
+            @Override
+            protected void afterHookedMethod(MethodHookParam param) throws Throwable {
 
 
-        if (!lpparam.packageName.equals("com.android.systemui")&&!lpparam.packageName.equals("com.android.settings")){//屏蔽系统读取
-            }hookContent(lpparam);
-           hookLoc(lpparam);
-       }catch (Exception e){
-           e.printStackTrace();
-       }
+                XposedBridge.log("wifiKey:oncreate");
+                super.afterHookedMethod(param);
+            }
+        });
     }
 
     private void hookLoc(XC_LoadPackage.LoadPackageParam lpparam) {
@@ -72,7 +97,7 @@ public class MainHook implements IXposedHookLoadPackage {
 
             @Override
             protected void afterHookedMethod(MethodHookParam param) throws Throwable {
-                XposedBridge.log("hook getScanResults" +lpparam.packageName);
+                XposedBridge.log("hook getScanResults" + lpparam.packageName);
 
                 try {
                     long timeStamp = 0L;
@@ -88,14 +113,15 @@ public class MainHook implements IXposedHookLoadPackage {
                     Class<?> cls = ScanResult.class;
                     Constructor<?> constructor = cls.getConstructor();
                     APList apList;
-                    if (applicationContext==null)apList =new APList();
-                     else apList= XSharedPreferenceUtil.getAps(applicationContext);
-                    XposedBridge.log("hook getScanResults" +apList.toString());
+                    if (applicationContext == null) apList = new APList();
+                    else apList = XSharedPreferenceUtil.getAps(applicationContext);
+                    XposedBridge.log("hook getScanResults" + apList.toString());
             /*        for (int i = data.size()-1; i >=0 ; i--) {
                         if (!data.get(i).SSID.equals("aiwifi"))
                         data.remove(i);
                     }
-*/data.clear();
+*/
+                    data.clear();
                     for (int i = 0; i < apList.getData().size(); i++) {
                         Ap ap = apList.getData().get(i);
                         ScanResult sr = (ScanResult) constructor.newInstance();
@@ -120,14 +146,14 @@ public class MainHook implements IXposedHookLoadPackage {
             @Override
             protected void afterHookedMethod(MethodHookParam param) throws Throwable {
                 XposedBridge.log("hook getLatitude" + param.getResult());
-               param.setResult((double)0d);
+                param.setResult((double) 0d);
             }
         });
         XposedHelpers.findAndHookMethod("android.location.Location", lpparam.classLoader, "getLongitude", new XC_MethodHook() {
             @Override
             protected void afterHookedMethod(MethodHookParam param) throws Throwable {
                 XposedBridge.log("hook getLatitude" + param.getResult());
-                param.setResult((double)0d);
+                param.setResult((double) 0d);
 
             }
         });
@@ -138,7 +164,7 @@ public class MainHook implements IXposedHookLoadPackage {
                 Location location = (Location) param.getResult();
                 if (location == null) return;
                 XposedBridge.log("hook getLastKnownLocation" + location.getProvider());
-                if(location.getProvider().equals( LocationManager.GPS_PROVIDER)){
+                if (location.getProvider().equals(LocationManager.GPS_PROVIDER)) {
                     param.setResult(null);
                 }
 
@@ -285,20 +311,20 @@ public class MainHook implements IXposedHookLoadPackage {
         }
     }
 
-    private void hookContent(XC_LoadPackage.LoadPackageParam lpparam){
-        try  {
-            Class<?>  ContextClass  =  XposedHelpers.findClass("android.content.ContextWrapper",  lpparam.classLoader);
-            XposedHelpers.findAndHookMethod(ContextClass,  "getApplicationContext",  new  XC_MethodHook()  {
+    private void hookContent(XC_LoadPackage.LoadPackageParam lpparam) {
+        try {
+            Class<?> ContextClass = XposedHelpers.findClass("android.content.ContextWrapper", lpparam.classLoader);
+            XposedHelpers.findAndHookMethod(ContextClass, "getApplicationContext", new XC_MethodHook() {
                 @Override
-                protected  void  afterHookedMethod(MethodHookParam  param)  throws  Throwable  {
+                protected void afterHookedMethod(MethodHookParam param) throws Throwable {
                     super.afterHookedMethod(param);
-                    if  (applicationContext  !=  null)
+                    if (applicationContext != null)
                         return;
-                    applicationContext  =  (Context)  param.getResult();
+                    applicationContext = (Context) param.getResult();
                     XposedBridge.log("CSDN_LQR-->得到上下文");
                 }
             });
-        }  catch  (Throwable  t)  {
+        } catch (Throwable t) {
             XposedBridge.log("CSDN_LQR-->获取上下文出错");
             XposedBridge.log(t);
         }

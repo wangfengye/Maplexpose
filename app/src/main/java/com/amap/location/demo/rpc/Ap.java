@@ -3,7 +3,6 @@ package com.amap.location.demo.rpc;
 import android.os.Parcel;
 import android.os.Parcelable;
 
-import com.alibaba.fastjson.annotation.JSONField;
 
 /**
  * @author maple on 2019/5/14 10:12.
@@ -12,7 +11,6 @@ import com.alibaba.fastjson.annotation.JSONField;
  */
 public class Ap implements Parcelable {
     private int id;
-    @JSONField(name = "device_id")
     private int deviceId;
 
     private String bssid;
@@ -28,10 +26,10 @@ public class Ap implements Parcelable {
     private String cityCode;
     private String adCode;
     private String debug;
+    private String area;
 
     public Ap() {
     }
-
     protected Ap(Parcel in) {
         id = in.readInt();
         deviceId = in.readInt();
@@ -47,6 +45,7 @@ public class Ap implements Parcelable {
         cityCode = in.readString();
         adCode = in.readString();
         debug = in.readString();
+        area = in.readString();
     }
 
     @Override
@@ -65,6 +64,7 @@ public class Ap implements Parcelable {
         dest.writeString(cityCode);
         dest.writeString(adCode);
         dest.writeString(debug);
+        dest.writeString(area);
     }
 
     @Override
@@ -194,5 +194,13 @@ public class Ap implements Parcelable {
 
     public void setDebug(String debug) {
         this.debug = debug;
+    }
+
+    public String getArea() {
+        return area;
+    }
+
+    public void setArea(String area) {
+        this.area = area;
     }
 }

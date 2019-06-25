@@ -6,8 +6,8 @@ android {
         applicationId "com.maple.maplexpose"
         minSdkVersion 21
         targetSdkVersion 27
-        versionCode 3
-        versionName "1.1"
+        versionCode 4
+        versionName "1.2"
         testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
     }
     buildTypes {
