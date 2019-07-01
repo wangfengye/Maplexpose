@@ -15,6 +15,9 @@ import com.amap.location.demo.rpc.Ap;
 import com.amap.location.demo.rpc.LocManager;
 import com.maple.maplexpose.mqtt.MqttApiImpl;
 
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
+import java.util.Date;
 import java.util.List;
 
 /**
@@ -80,8 +83,11 @@ public class LocService extends IntentService {
         //private Api mApi = RetrofitFactory.create().baseUrl("http://192.168.168.175:8865").build().create(Api.class);
         if (mApi == null)
             mApi = new MqttApiImpl().init(getApplicationContext(), "tcp://192.168.168.149:1883");
+        long time = 0; DateFormat format = new SimpleDateFormat("HH:mm:ss");
         for (; ; ) {
             if (!mRunning) break;
+            time = System.currentTimeMillis();
+
             try {
                 APList data = mApi.getTask().execute().body();
                 if (data == null || data.getCode() != 200) {
@@ -90,7 +96,7 @@ public class LocService extends IntentService {
                 }
                 Log.i(TAG, "start: " + data.getData().get(0).getSsid());
                 if (mListener != null)
-                    mListener.onAction("******start*******\n" + data.getData().get(0).getSsid() + "\n");
+                    mListener.onAction("******start*******"+format.format(new Date(time))+"\n" + data.getData().get(0).getSsid() + "\n");
                 XSharedPreferenceUtil.setAps(data, LocService.this);
                 if (mLocManger == null) {
                     bindAidl();
@@ -131,7 +137,8 @@ public class LocService extends IntentService {
                 }
                 if (mListener != null) mListener.onAction("******finished*******\n");
                 if (mListener != null) mListener.onFinished();
-                Thread.sleep(3000);
+                long delay = time + 3000 - System.currentTimeMillis();
+                if (delay > 0) Thread.sleep(delay);
             } catch (Exception e) {
                 Log.e(TAG, "onError: " + e.getMessage());
                 if (mListener != null) mListener.onAction("******执行异常*******\n" + e.getMessage());
