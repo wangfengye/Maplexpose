@@ -32,7 +32,7 @@ dependencies {
     compileOnly 'de.robv.android.xposed:api:82'
     api 'com.alibaba:fastjson:1.1.70.android'
     implementation 'com.github.wangfengye:RetrofitManage:v1.1'
-   // implementation 'org.fusesource.mqtt-client:mqtt-client:1.12'
+    // implementation 'org.fusesource.mqtt-client:mqtt-client:1.12'
     implementation 'org.eclipse.paho:org.eclipse.paho.client.mqttv3:1.1.0'
     implementation 'org.eclipse.paho:org.eclipse.paho.android.service:1.1.1'
 

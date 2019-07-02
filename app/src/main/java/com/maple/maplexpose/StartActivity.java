@@ -4,13 +4,15 @@ import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
 import android.content.ServiceConnection;
+import android.content.SharedPreferences;
+import android.os.Bundle;
 import android.os.IBinder;
 import android.support.v7.app.AppCompatActivity;
-import android.os.Bundle;
 import android.util.Log;
 import android.widget.Button;
 import android.widget.TextView;
 
+import com.maple.maplexpose.mqtt.MqttApiImpl;
 import com.maple.maplexpose.util.FixLinesStr;
 
 /**
@@ -36,6 +38,9 @@ public class StartActivity extends AppCompatActivity {
         mBtnLoc = findViewById(R.id.btn_loc);
         mTvContent = findViewById(R.id.tv_content);
         mTvCounter = findViewById(R.id.tv_count);
+        // 初始化前缀
+        SharedPreferences sharedPreferences = this.getSharedPreferences("a", MODE_PRIVATE);
+        MqttApiImpl.setTopicPrefix(sharedPreferences.getString("prefix", ""));
         findViewById(R.id.btn_debug).setOnClickListener(v -> startActivity(new Intent(this, MainActivity.class)));
         mServiceConnection = new ServiceConnection() {
             @Override
@@ -84,7 +89,9 @@ public class StartActivity extends AppCompatActivity {
                 mBtnLoc.setText("运行中");
             }
         });
-
+        findViewById(R.id.btn_preFix).setOnClickListener(v -> {
+            startActivity(new Intent(StartActivity.this, DialogActivity.class));
+        });
     }
 
 

@@ -40,9 +40,24 @@ import retrofit2.Response;
 public class MqttApiImpl implements Api {
     private static final String TAG = "MqttApiImpl";
     private static final String CLIENT_ID = getMac();
-    private static final String SUB = "loc_req/" + getMac();
-    private static final String PUB = "loc_res/" + getMac();
-    private static final String REG =  "register/"+ getMac();
+
+    public static String SUB ;
+    public static String PUB ;
+    public static String REG ;
+
+    //自定义通配符前缀,用于个人测试
+    public static void setTopicPrefix(String s) {
+        SUB = s + "loc_req/" + getMac();
+        PUB = s + "loc_res/" + getMac();
+        REG = s + "register/" + getMac();
+    }
+
+    public static void resetTopic() {
+        SUB = "loc_req/" + getMac();
+        PUB = "loc_res/" + getMac();
+        REG = "register/" + getMac();
+    }
+
     public static final int QOS = 1;
     private MqttAndroidClient mClient;
     private BlockingQueue<APList> queue = new LinkedBlockingDeque<>();
@@ -89,7 +104,7 @@ public class MqttApiImpl implements Api {
         MqttConnectOptions mqttConnectOptions = new MqttConnectOptions();
         mqttConnectOptions.setAutomaticReconnect(true);
         mqttConnectOptions.setCleanSession(false);
-        mqttConnectOptions.setWill(REG,"offline".getBytes(),QOS,true);
+        mqttConnectOptions.setWill(REG, "offline".getBytes(), QOS, true);
         try {
             Log.e(TAG, "init: " + Thread.currentThread().getName());
             mClient.connect(mqttConnectOptions, null, new IMqttActionListener() {
@@ -105,7 +120,7 @@ public class MqttApiImpl implements Api {
                     Log.i(TAG, "connect-onSuccess: ");
                     sub();
                     try {
-                        mClient.publish(REG,"online".getBytes(), QOS,true);
+                        mClient.publish(REG, "online".getBytes(), QOS, true);
                     } catch (MqttException e) {
                         e.printStackTrace();
                     }
