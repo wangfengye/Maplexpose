@@ -59,7 +59,7 @@ public class StartActivity extends AppCompatActivity {
                     public void onFinished() {
                         runOnUiThread(() -> {
                             count++;
-                            mTvCounter.setText("已完成 " + count + " 个任务");
+                            mTvCounter.setText(MqttApiImpl.getMac()+"已完成 " + count + " 个任务");
                         });
 
                     }
@@ -97,12 +97,8 @@ public class StartActivity extends AppCompatActivity {
 
     @Override
     protected void onDestroy() {
-        if (mService != null) {
-            mService.mRunning = false;
-            mService.stopSelf();
-            mService = null;
-            isRunning = false;
-        }
+        unbindService(mServiceConnection);
         super.onDestroy();
     }
+
 }

@@ -27,7 +27,7 @@ public class LocService extends IntentService {
     public static final String TAG = "LocService";
     public static final int TYPE_DEBUG = 1;
     //private Api mApi = RetrofitFactory.create().baseUrl("http://192.168.168.175:8865").build().create(Api.class);
-    private Api mApi;
+    public static Api mApi;
     private LocManager mLocManger;
     private HandleListener mListener;
     public boolean mRunning = true;
@@ -83,7 +83,8 @@ public class LocService extends IntentService {
         //private Api mApi = RetrofitFactory.create().baseUrl("http://192.168.168.175:8865").build().create(Api.class);
         if (mApi == null)
             mApi = new MqttApiImpl().init(getApplicationContext(), "tcp://192.168.168.149:1883");
-        long time = 0; DateFormat format = new SimpleDateFormat("HH:mm:ss");
+        long time = 0;
+        DateFormat format = new SimpleDateFormat("HH:mm:ss");
         for (; ; ) {
             if (!mRunning) break;
             time = System.currentTimeMillis();
@@ -96,20 +97,20 @@ public class LocService extends IntentService {
                 }
                 Log.i(TAG, "start: " + data.getData().get(0).getSsid());
                 if (mListener != null)
-                    mListener.onAction("******start*******"+format.format(new Date(time))+"\n" + data.getData().get(0).getSsid() + "\n");
+                    mListener.onAction("******start*******" + format.format(new Date(time)) + "\n" + data.getData().get(0).getSsid() + "\n");
                 XSharedPreferenceUtil.setAps(data, LocService.this);
                 if (mLocManger == null) {
-                    bindAidl();
-                    int counter = 0;
+                    int counter = 1;
                     while (true) {
                         if (mLocManger != null) break;
+                        bindAidl();
                         if (counter > 3) {
                             Log.e(TAG, "bindAidl: " + counter);
                             return;
                         }
                         counter++;
                         try {
-                            Thread.sleep(2000);
+                            Thread.sleep(2000 * counter);
                         } catch (InterruptedException e) {
                             e.printStackTrace();
                         }

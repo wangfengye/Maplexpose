@@ -8,6 +8,7 @@ import com.alibaba.fastjson.JSONException;
 import com.amap.location.demo.rpc.Ap;
 import com.maple.maplexpose.APList;
 import com.maple.maplexpose.Api;
+import com.maple.maplexpose.LocService;
 
 import org.eclipse.paho.android.service.MqttAndroidClient;
 import org.eclipse.paho.client.mqttv3.DisconnectedBufferOptions;
@@ -22,10 +23,10 @@ import org.eclipse.paho.client.mqttv3.MqttMessage;
 import java.io.IOException;
 import java.net.NetworkInterface;
 import java.net.SocketException;
-import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.LinkedBlockingDeque;
+import java.util.concurrent.TimeUnit;
 
 import okhttp3.Request;
 import retrofit2.Call;
@@ -58,9 +59,9 @@ public class MqttApiImpl implements Api {
         REG = "register/" + getMac();
     }
 
-    public static final int QOS = 1;
+    public static final int QOS = 0;
     private MqttAndroidClient mClient;
-    private BlockingQueue<APList> queue = new LinkedBlockingDeque<>();
+    private LinkedBlockingDeque<APList> queue = new LinkedBlockingDeque<>();
     private int RETRY_SECOND = 1;
     private ExecutorService mPool = Executors.newFixedThreadPool(1);
 
@@ -103,7 +104,7 @@ public class MqttApiImpl implements Api {
         });
         MqttConnectOptions mqttConnectOptions = new MqttConnectOptions();
         mqttConnectOptions.setAutomaticReconnect(true);
-        mqttConnectOptions.setCleanSession(false);
+        mqttConnectOptions.setCleanSession(true);
         mqttConnectOptions.setWill(REG, "offline".getBytes(), QOS, true);
         try {
             Log.e(TAG, "init: " + Thread.currentThread().getName());
@@ -174,12 +175,26 @@ public class MqttApiImpl implements Api {
             @Override
             public Response<APList> execute() throws IOException {
                 APList data = null;
-                try {
-                    data = queue.take();
-                } catch (InterruptedException e) {
-                    e.printStackTrace();
+                for (;;) {
+
+                    try {
+                        data = queue.poll(2, TimeUnit.MINUTES);
+                    } catch (InterruptedException e) {
+                        e.printStackTrace();
+                    }
+                    if (data!=null) return Response.success(data);
+                    else {
+                        //重发获取任务指令.
+                        Log.e(TAG, "超时未下发数据,发送上报请求数据" );
+                        if (LocService.mApi==null)continue;
+                        Ap ap = new Ap();
+                        ap.setId(-1);//-1表示无效上报,只是为了申请新数据
+                        ap.setLocationType("高德_-1");
+                        APList posted = LocService.mApi.postLoc(ap).execute().body();
+                        // posted为返回结果,无需处理
+                    }
                 }
-                return Response.success(data);
+
             }
         };
     }
