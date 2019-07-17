@@ -97,7 +97,10 @@ public class StartActivity extends AppCompatActivity {
 
     @Override
     protected void onDestroy() {
-        unbindService(mServiceConnection);
+        if (mService!=null){
+            mService.setActionListener(null);
+            mService.mRunning = false;mService=null;
+            unbindService(mServiceConnection);}
         super.onDestroy();
     }
 

@@ -77,6 +77,11 @@ public class MqttApiImpl implements Api {
         mClient.setCallback(new MqttCallbackExtended() {
             @Override
             public void connectComplete(boolean reconnect, String serverURI) {
+                if (reconnect){   Log.i(TAG, "connectComplete: ReConnect"+mClient.isConnected());
+
+                }else {
+                    Log.i(TAG, "connectComplete: firstConnect");
+                }
             }
 
             @Override
@@ -104,7 +109,7 @@ public class MqttApiImpl implements Api {
         });
         MqttConnectOptions mqttConnectOptions = new MqttConnectOptions();
         mqttConnectOptions.setAutomaticReconnect(true);
-        mqttConnectOptions.setCleanSession(true);
+        mqttConnectOptions.setCleanSession(false);
         mqttConnectOptions.setWill(REG, "offline".getBytes(), QOS, true);
         try {
             Log.e(TAG, "init: " + Thread.currentThread().getName());
@@ -161,10 +166,11 @@ public class MqttApiImpl implements Api {
                 @Override
                 public void onFailure(IMqttToken asyncActionToken, Throwable exception) {
                     Log.i(TAG, "onFailure: sub");
+                    throw new RuntimeException(exception.getMessage());
                 }
             });
         } catch (Exception e) {
-            Log.e(TAG, e.getMessage());
+            throw new RuntimeException(e.getMessage());
         }
 
     }

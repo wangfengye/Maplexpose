@@ -129,7 +129,7 @@ public class MqttActivity extends AppCompatActivity {
 
     @Override
     protected void onDestroy() {
-        if (mClient != null) {
+        if (mClient != null&&mClient.isConnected()) {
             try {
                 mClient.disconnect();
             } catch (Exception e) {

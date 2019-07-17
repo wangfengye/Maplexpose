@@ -187,6 +187,10 @@ public class LocService extends IntentService {
     @Override
     public void onDestroy() {
         super.onDestroy();
+        Log.i(TAG, "onDestroy: LocService");
+        if(mApi instanceof  MqttApiImpl){
+            ((MqttApiImpl) mApi).ondestory();
+        }
         try {
             if (connection != null) unbindService(connection);
         } catch (Exception e) {
