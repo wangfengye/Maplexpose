@@ -11,7 +11,6 @@ import com.maple.maplexpose.Api;
 import com.maple.maplexpose.LocService;
 
 import org.eclipse.paho.android.service.MqttAndroidClient;
-import org.eclipse.paho.client.mqttv3.DisconnectedBufferOptions;
 import org.eclipse.paho.client.mqttv3.IMqttActionListener;
 import org.eclipse.paho.client.mqttv3.IMqttDeliveryToken;
 import org.eclipse.paho.client.mqttv3.IMqttToken;
@@ -23,8 +22,6 @@ import org.eclipse.paho.client.mqttv3.MqttMessage;
 import java.io.IOException;
 import java.net.NetworkInterface;
 import java.net.SocketException;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
 import java.util.concurrent.LinkedBlockingDeque;
 import java.util.concurrent.TimeUnit;
 
@@ -42,9 +39,9 @@ public class MqttApiImpl implements Api {
     private static final String TAG = "MqttApiImpl";
     private static final String CLIENT_ID = getMac();
 
-    public static String SUB ;
-    public static String PUB ;
-    public static String REG ;
+    public static String SUB;
+    public static String PUB;
+    public static String REG;
 
     //自定义通配符前缀,用于个人测试
     public static void setTopicPrefix(String s) {
@@ -62,8 +59,11 @@ public class MqttApiImpl implements Api {
     public static final int QOS = 0;
     private MqttAndroidClient mClient;
     private LinkedBlockingDeque<APList> queue = new LinkedBlockingDeque<>();
-    private int RETRY_SECOND = 1;
-    private ExecutorService mPool = Executors.newFixedThreadPool(1);
+    private ListenerState mListenerState;
+
+    public void setListenerState(ListenerState mListenerState) {
+        this.mListenerState = mListenerState;
+    }
 
     public MqttApiImpl init(Context context, String serverUri) {
         return this.init(context, serverUri, true);
@@ -77,16 +77,24 @@ public class MqttApiImpl implements Api {
         mClient.setCallback(new MqttCallbackExtended() {
             @Override
             public void connectComplete(boolean reconnect, String serverURI) {
-                if (reconnect){   Log.i(TAG, "connectComplete: ReConnect"+mClient.isConnected());
-
-                }else {
+                if (mListenerState!=null)mListenerState.onStateChange(1);
+                if (reconnect) {
+                    Log.i(TAG, "connectComplete: ReConnect " + mClient.isConnected());
+                } else {
+                    sub();
+                    try {
+                        mClient.publish(REG, "online".getBytes(), QOS, true);
+                    } catch (MqttException e) {
+                        e.printStackTrace();
+                    }
                     Log.i(TAG, "connectComplete: firstConnect");
                 }
             }
 
             @Override
             public void connectionLost(Throwable cause) {
-                init(context, serverUri, false);
+                if (mListenerState!=null)mListenerState.onStateChange(0);
+                Log.i(TAG, "connectionLost: ");
             }
 
             @Override
@@ -110,43 +118,10 @@ public class MqttApiImpl implements Api {
         MqttConnectOptions mqttConnectOptions = new MqttConnectOptions();
         mqttConnectOptions.setAutomaticReconnect(true);
         mqttConnectOptions.setCleanSession(false);
-        mqttConnectOptions.setWill(REG, "offline".getBytes(), QOS, true);
+        mqttConnectOptions.setWill(REG, "offline".getBytes(), QOS, false);
         try {
             Log.e(TAG, "init: " + Thread.currentThread().getName());
-            mClient.connect(mqttConnectOptions, null, new IMqttActionListener() {
-                @Override
-                public void onSuccess(IMqttToken asyncActionToken) {
-                    RETRY_SECOND = 1;
-                    DisconnectedBufferOptions disconnectedBufferOptions = new DisconnectedBufferOptions();
-                    disconnectedBufferOptions.setBufferEnabled(true);
-                    disconnectedBufferOptions.setBufferSize(100);
-                    disconnectedBufferOptions.setPersistBuffer(false);
-                    disconnectedBufferOptions.setDeleteOldestMessages(false);
-                    mClient.setBufferOpts(disconnectedBufferOptions);
-                    Log.i(TAG, "connect-onSuccess: ");
-                    sub();
-                    try {
-                        mClient.publish(REG, "online".getBytes(), QOS, true);
-                    } catch (MqttException e) {
-                        e.printStackTrace();
-                    }
-                }
-
-                @Override
-                public void onFailure(IMqttToken asyncActionToken, Throwable exception) {
-                    Log.e(TAG, "onFailure--" + Thread.currentThread().getName() + ": " + exception.getMessage());
-                    mPool.execute(() -> {
-                        try {
-                            Thread.sleep(RETRY_SECOND * 1000);
-                            RETRY_SECOND = RETRY_SECOND << 1;
-                        } catch (InterruptedException e) {
-                            e.printStackTrace();
-                        }
-                        init(context, serverUri, false);
-                    });
-
-                }
-            });
+            mClient.connect(mqttConnectOptions, null, null);
         } catch (MqttException e) {
             e.printStackTrace();
             init(context, serverUri, false);
@@ -181,23 +156,26 @@ public class MqttApiImpl implements Api {
             @Override
             public Response<APList> execute() throws IOException {
                 APList data = null;
-                for (;;) {
-
+                for (; ; ) {
                     try {
                         data = queue.poll(2, TimeUnit.MINUTES);
                     } catch (InterruptedException e) {
                         e.printStackTrace();
                     }
-                    if (data!=null) return Response.success(data);
-                    else {
+                    if (data != null) return Response.success(data);
+                    else if (mClient.isConnected()) {
                         //重发获取任务指令.
-                        Log.e(TAG, "超时未下发数据,发送上报请求数据" );
-                        if (LocService.mApi==null)continue;
+                        Log.e(TAG, "超时未下发数据,发送上报请求数据");
+                        if (LocService.mApi == null) continue;
                         Ap ap = new Ap();
                         ap.setId(-1);//-1表示无效上报,只是为了申请新数据
                         ap.setLocationType("高德_-1");
-                        APList posted = LocService.mApi.postLoc(ap).execute().body();
                         // posted为返回结果,无需处理
+                        APList posted = LocService.mApi.postLoc(ap).execute().body();
+                    } else {
+                        //断网中
+                        Log.e(TAG, "断网中,等待重连");
+
                     }
                 }
 
@@ -280,7 +258,7 @@ public class MqttApiImpl implements Api {
         return mac;
     }
 
-    public void ondestory() {
+    public void onDestroy() {
         if (mClient != null) {
             try {
                 mClient.disconnect();
@@ -288,5 +266,9 @@ public class MqttApiImpl implements Api {
                 e.printStackTrace();
             }
         }
+    }
+
+   public interface  ListenerState{
+        void onStateChange(int i);
     }
 }

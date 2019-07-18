@@ -129,7 +129,7 @@ public class MainActivity extends AppCompatActivity {
     /**
      * Messenger 获取定位
      */
-    private void sendWithMEssenger() {
+    private void sendWithMessenger() {
         Message msgFromClient = new Message();
         msgFromClient.what = 1;
         msgFromClient.replyTo = mMessenger;

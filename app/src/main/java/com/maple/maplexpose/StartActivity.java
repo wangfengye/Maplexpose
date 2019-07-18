@@ -1,5 +1,6 @@
 package com.maple.maplexpose;
 
+import android.annotation.SuppressLint;
 import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
@@ -55,11 +56,19 @@ public class StartActivity extends AppCompatActivity {
                         });
                     }
 
+                    @SuppressLint("ResourceAsColor")
+                    @Override
+                    public MqttApiImpl.ListenerState getMqttState() {
+                        return i -> mTvContent.setBackgroundResource(i == 1 ? R.color.white : R.color.red);
+
+
+                    }
+
                     @Override
                     public void onFinished() {
                         runOnUiThread(() -> {
                             count++;
-                            mTvCounter.setText(MqttApiImpl.getMac()+"已完成 " + count + " 个任务");
+                            mTvCounter.setText(MqttApiImpl.getMac() + "已完成 " + count + " 个任务");
                         });
 
                     }
@@ -92,15 +101,19 @@ public class StartActivity extends AppCompatActivity {
         findViewById(R.id.btn_preFix).setOnClickListener(v -> {
             startActivity(new Intent(StartActivity.this, DialogActivity.class));
         });
+        // 测试代码
+        //    new MqttTest().init(this,"tcp://192.168.168.149:1883");
     }
 
 
     @Override
     protected void onDestroy() {
-        if (mService!=null){
+        if (mService != null) {
             mService.setActionListener(null);
-            mService.mRunning = false;mService=null;
-            unbindService(mServiceConnection);}
+            mService.mRunning = false;
+            mService = null;
+            unbindService(mServiceConnection);
+        }
         super.onDestroy();
     }
 

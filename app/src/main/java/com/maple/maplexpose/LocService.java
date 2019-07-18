@@ -21,7 +21,7 @@ import java.util.Date;
 import java.util.List;
 
 /**
-
+ *
  */
 public class LocService extends IntentService {
     public static final String TAG = "LocService";
@@ -64,6 +64,9 @@ public class LocService extends IntentService {
         //返回执行日志
         void onAction(String data);
 
+        //传递mqtt的状态变化接口
+        MqttApiImpl.ListenerState getMqttState();
+
         //一个任务已完成
         void onFinished();
     }
@@ -81,8 +84,11 @@ public class LocService extends IntentService {
         // 执行定位
         // 上报定位结果
         //private Api mApi = RetrofitFactory.create().baseUrl("http://192.168.168.175:8865").build().create(Api.class);
-        if (mApi == null)
+        if (mApi == null) {
             mApi = new MqttApiImpl().init(getApplicationContext(), "tcp://192.168.168.149:1883");
+            if (mListener != null) ((MqttApiImpl) mApi).setListenerState(mListener.getMqttState());
+        }
+
         long time = 0;
         DateFormat format = new SimpleDateFormat("HH:mm:ss");
         for (; ; ) {
@@ -188,8 +194,8 @@ public class LocService extends IntentService {
     public void onDestroy() {
         super.onDestroy();
         Log.i(TAG, "onDestroy: LocService");
-        if(mApi instanceof  MqttApiImpl){
-            ((MqttApiImpl) mApi).ondestory();
+        if (mApi instanceof MqttApiImpl) {
+            ((MqttApiImpl) mApi).onDestroy();
         }
         try {
             if (connection != null) unbindService(connection);
