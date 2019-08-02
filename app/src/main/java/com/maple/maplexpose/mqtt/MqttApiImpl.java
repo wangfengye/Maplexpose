@@ -38,6 +38,7 @@ import retrofit2.Response;
 public class MqttApiImpl implements Api {
     private static final String TAG = "MqttApiImpl";
     private static final String CLIENT_ID = getMac();
+    private int errorLog;//记录断线状态发送的拉消息数量
 
     public static String SUB;
     public static String PUB;
@@ -70,6 +71,16 @@ public class MqttApiImpl implements Api {
 
     }
 
+    /**
+     *
+     * @return 当前缓存任务量
+     */
+    public int getCacheTaskSize(){
+        return queue==null?0:queue.size();
+    }
+    public int getErrorLog(){
+        return errorLog;
+    }
     public MqttApiImpl init(Context context, String serverUri, boolean isFirst) {
         if (isFirst) Log.e(TAG, "init: 初次连接");
         else Log.e(TAG, "init: 重新连接");
@@ -164,6 +175,7 @@ public class MqttApiImpl implements Api {
                     }
                     if (data != null) return Response.success(data);
                     else if (mClient.isConnected()) {
+                        errorLog++;
                         //重发获取任务指令.
                         Log.e(TAG, "超时未下发数据,发送上报请求数据");
                         if (LocService.mApi == null) continue;

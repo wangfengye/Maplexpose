@@ -16,6 +16,10 @@ import android.widget.TextView;
 import com.maple.maplexpose.mqtt.MqttApiImpl;
 import com.maple.maplexpose.util.FixLinesStr;
 
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
+import java.util.Date;
+
 /**
  * TODO: 瑕疵,IntentService不建议使用bind
  */
@@ -31,7 +35,8 @@ public class StartActivity extends AppCompatActivity {
     private static final int MAX_LINES = 24;
     private int mLines = 0;
     private FixLinesStr mFixLinesStr = new FixLinesStr();
-
+    private TextView mTvStarTime;
+    DateFormat format = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -39,6 +44,8 @@ public class StartActivity extends AppCompatActivity {
         mBtnLoc = findViewById(R.id.btn_loc);
         mTvContent = findViewById(R.id.tv_content);
         mTvCounter = findViewById(R.id.tv_count);
+        mTvStarTime = findViewById(R.id.tv_start);
+        mTvStarTime.setText(format.format(new Date(MainApp.time)));
         // 初始化前缀
         SharedPreferences sharedPreferences = this.getSharedPreferences("a", MODE_PRIVATE);
         MqttApiImpl.setTopicPrefix(sharedPreferences.getString("prefix", ""));
@@ -65,10 +72,10 @@ public class StartActivity extends AppCompatActivity {
                     }
 
                     @Override
-                    public void onFinished() {
+                    public void onFinished(final  int cacheSize,final int errlog) {
                         runOnUiThread(() -> {
                             count++;
-                            mTvCounter.setText(MqttApiImpl.getMac() + "已完成 " + count + " 个任务");
+                            mTvCounter.setText(MqttApiImpl.getMac() + "已完成 " + count + " 个任务,缓存任务数:"+cacheSize+" errlog: "+errlog);
                         });
 
                     }

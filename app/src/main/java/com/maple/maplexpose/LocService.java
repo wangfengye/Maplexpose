@@ -68,7 +68,7 @@ public class LocService extends IntentService {
         MqttApiImpl.ListenerState getMqttState();
 
         //一个任务已完成
-        void onFinished();
+        void onFinished(int cache,int errlog);
     }
 
     @Override
@@ -125,7 +125,13 @@ public class LocService extends IntentService {
                 Log.e(TAG, "aidl start: ");
                 List<Ap> aps = mLocManger.loc();
                 Log.e(TAG, "aidl end: ");
-                for (Ap ap : aps) {
+                for (int i=0;i<aps.size();i++) {
+                    Ap ap = aps.get(i);
+                    if (i==0){//高德添加类型,防止高德定位失败后,服务端不下发新的指令
+                        if (ap.getLocationType()==null||ap.getLocationType().length()<=0){
+                            ap.setLocationType("高德_-2");
+                        }
+                    }
                     ap.setLevel(data.getData().get(0).getLevel());
                     ap.setSsid(data.getData().get(0).getSsid());
                     ap.setBssid(data.getData().get(0).getBssid());
@@ -143,7 +149,8 @@ public class LocService extends IntentService {
                     Log.i(TAG, "end: " + ap.toString());
                 }
                 if (mListener != null) mListener.onAction("******finished*******\n");
-                if (mListener != null) mListener.onFinished();
+                if (mListener != null) mListener.onFinished(mApi instanceof MqttApiImpl? ((MqttApiImpl) mApi).getCacheTaskSize():0,
+                        mApi instanceof  MqttApiImpl? ((MqttApiImpl) mApi).getErrorLog():0);
                 long delay = time + 3000 - System.currentTimeMillis();
                 if (delay > 0) Thread.sleep(delay);
             } catch (Exception e) {
