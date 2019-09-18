@@ -1,6 +1,6 @@
 apply plugin: 'com.android.application'
 def app_name="wifiLoc"
-def version_name ="1.4"
+def version_name ="1.5"
 android {
     compileSdkVersion 27
     defaultConfig {

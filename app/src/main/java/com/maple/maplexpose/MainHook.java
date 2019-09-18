@@ -49,22 +49,23 @@ public class MainHook implements IXposedHookLoadPackage {
     @Override
     public void handleLoadPackage(XC_LoadPackage.LoadPackageParam lpparam) throws Throwable {
         // 微信hook
-       /* if (lpparam.packageName.equals(PACKAGE_NAME)) {
+        if (lpparam.packageName.equals(PACKAGE_NAME)) {
             try {
-                hookWeChat(lpparam);
+                //hookWeChat(lpparam);
+                hookWeChatNearBy(lpparam);
             } catch (Throwable throwable) {
                 throwable.printStackTrace();
             }
-        }*/
+        }
         // hook wifi列表
-        try {
+        /*try {
             if (!lpparam.packageName.equals("com.android.systemui") && !lpparam.packageName.equals("com.android.settings")) {//屏蔽系统读取
                 hookLoc(lpparam);
             }
             hookContent(lpparam);
         } catch (Exception e) {
             e.printStackTrace();
-        }
+        }*/
         // wifi万能钥匙hook
         // hookWifiKey(lpparam);
     }
@@ -83,8 +84,6 @@ public class MainHook implements IXposedHookLoadPackage {
         XposedHelpers.findAndHookMethod("com.wifi.connect.ui.ConnectFragment", lpparam.classLoader, "onCreate", Bundle.class, new XC_MethodHook() {
             @Override
             protected void afterHookedMethod(MethodHookParam param) throws Throwable {
-
-
                 XposedBridge.log("wifiKey:oncreate");
                 super.afterHookedMethod(param);
             }
@@ -308,6 +307,81 @@ public class MainHook implements IXposedHookLoadPackage {
             });
         } catch (Exception e) {
             e.printStackTrace();
+        }
+    }
+
+    private static Object getFromField(XC_MethodHook.MethodHookParam param, String fieldName) throws Exception {
+        Field field = param.thisObject.getClass().getDeclaredField(fieldName);
+        field.setAccessible(true);
+        return field.get(param.thisObject);
+    }
+    private static void setToField(XC_MethodHook.MethodHookParam param, String fieldName,Object value) throws Exception {
+        Field field = param.thisObject.getClass().getDeclaredField(fieldName);
+        field.setAccessible(true);
+        field.set(param.thisObject,value);
+    }
+    private void hookWeChatNearBy(XC_LoadPackage.LoadPackageParam lpparam) {
+        XposedBridge.log("hookWeChat: wx success");
+        try {
+            final ClassLoader classLoader = lpparam.classLoader;
+            // 控制附近的人位置
+            XposedHelpers.findAndHookMethod("com.tencent.mm.modelgeo.d", classLoader, "a", Class.forName("com.tencent.mm.modelgeo.b$a",true,classLoader), boolean.class, new XC_MethodHook() {
+                @Override
+                protected void beforeHookedMethod(MethodHookParam param) throws Throwable {
+                    super.beforeHookedMethod(param);
+                    // 120.737859,苏州
+                    setToField(param,"fWw",31.278959d);
+                    setToField(param,"fWx",120.737859d);
+                }
+
+                @Override
+                protected void afterHookedMethod(MethodHookParam param) throws Throwable {
+                    double fWw = (double) getFromField(param, "fWw");
+                    double fWx = (double) getFromField(param, "fWx");
+                    int fWy = (int) getFromField(param, "fWy");
+                    double fWz = (double) getFromField(param, "fWz");
+                    double fWA = (double) getFromField(param, "fWA");
+                    double bGk = (double) getFromField(param, "bGk");
+                    String fWB = (String) getFromField(param, "fWB");
+                    String fWC = (String) getFromField(param, "fWC");
+                    int fWD = (int) getFromField(param, "fWD");
+                    XposedBridge.log("fWw" + fWw
+                            + "\nfWx:  " + fWx
+                            + "\nfWy:  " + fWy
+                            + "\nfWz:  " + fWz
+                            + "\nfWA:  " + fWA
+                            + "\nbGk:  " + bGk
+                            + "\nfWB:  " + fWB
+                            + "\nfWC:  " + fWC
+                            + "\nfWd:  " + fWD);
+                    super.afterHookedMethod(param);
+                }
+            });
+
+
+
+            // 控制返回数量
+            XposedHelpers.findAndHookMethod("com.tencent.mm.plugin.nearby.a.c", classLoader, "cdL", new XC_MethodHook() {
+                protected void beforeHookedMethod(MethodHookParam param) throws Throwable {
+                    super.beforeHookedMethod(param);
+
+                    XposedBridge.log("cdL-before");
+                }
+
+                protected void afterHookedMethod(final MethodHookParam param) throws Throwable {
+                    super.afterHookedMethod(param);
+                    List<Object> data = (List<Object>) (param.getResult());
+                    XposedBridge.log("cdL-after" + data.size());
+                    // 保留一个看看情况
+                   /* while (data.size() > 1) {
+                        data.remove(0);
+                    }*/
+
+                }
+            });
+
+        } catch (Exception e) {
+            XposedBridge.log(e.getMessage() + "ma2");
         }
     }
 

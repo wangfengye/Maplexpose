@@ -9,4 +9,7 @@ interface LocManager {
      * and return values in AIDL.
      */
     List<Ap> loc();
+    Ap testA(in Ap ap);
+    void testB(out Ap ap);
+    void testC(inout Ap ap);
 }

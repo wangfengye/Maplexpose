@@ -30,22 +30,9 @@ public class Ap implements Parcelable {
 
     public Ap() {
     }
+
     protected Ap(Parcel in) {
-        id = in.readInt();
-        deviceId = in.readInt();
-        bssid = in.readString();
-        ssid = in.readString();
-        level = in.readInt();
-        latitude = in.readDouble();
-        longitude = in.readDouble();
-        address = in.readString();
-        accuracy = in.readInt();
-        locationType = in.readString();
-        province = in.readString();
-        cityCode = in.readString();
-        adCode = in.readString();
-        debug = in.readString();
-        area = in.readString();
+        readFromParcel(in);
     }
 
     @Override
@@ -65,6 +52,25 @@ public class Ap implements Parcelable {
         dest.writeString(adCode);
         dest.writeString(debug);
         dest.writeString(area);
+    }
+
+    public void readFromParcel(Parcel in) {
+        id = in.readInt();
+        deviceId = in.readInt();
+        bssid = in.readString();
+        ssid = in.readString();
+        level = in.readInt();
+        latitude = in.readDouble();
+        longitude = in.readDouble();
+        address = in.readString();
+        accuracy = in.readInt();
+        locationType = in.readString();
+        province = in.readString();
+        cityCode = in.readString();
+        adCode = in.readString();
+        debug = in.readString();
+        area = in.readString();
+
     }
 
     @Override
