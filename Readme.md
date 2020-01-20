@@ -21,9 +21,11 @@
     1. SharedPreference共享,xposed自己封装了获取其他应用SharedPreference的XSharedPreference.缺点:android7.0后,不在支持`MODE_WORLD_READABLE`,及只能在6.0及之前使用
     2. 使用ContentProvider提供跨应用的数据共享,需要hook`getApplicationContext`获取宿主的context才能使用
 2. 进程间通信,本应用需要知道定位状态,及同步的进程通信
-    1.broadcast,不支持同步
-    2.Messenger 本质binder 通过handler 实现, 只支持异步,不支持并发
-    3.aidl 本质binder ,支持小规模并发,同步, 最终采用该方式
+    1. broadcast,不支持同步
+    2. Messenger 本质binder 通过handler 实现, 只支持异步,不支持并发
+    3. aidl 本质binder ,支持小规模并发,同步, 最终采用该方式
+    4. Android匿名共享内存（Ashmem）[文档](https://www.jianshu.com/p/d9bc9c668ba6)
+    5. Android组件间通信通过bundle传递数据,支持跨进程
 3. AIDL中Parcelable 实现时必须保证完全一致
    1. 我在一端加了两个字段,但未将该字段加入序列化中,导致解析错位
 
